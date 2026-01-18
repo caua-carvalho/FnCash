@@ -1,0 +1,10 @@
+/**
+ * @file services/index.ts
+ * @description Arquivo de exportação centralizado para todos os serviços
+ * Facilita importações em toda a aplicação
+ */
+
+export { aiService, AIService } from './aiService';
+export { audioService, AudioService } from './audioService';
+export { transactionService, TransactionService } from './transactionService';
+

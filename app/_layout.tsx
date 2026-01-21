@@ -84,7 +84,7 @@ export default function RootLayout() {
         name="history"
         options={{
           title: 'Histórico',
-          headerTitle: 'Histórico de Transações',
+          headerTitle: 'Histórico',
           tabBarLabel: 'Histórico',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="history" size={size} color={color} />

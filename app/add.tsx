@@ -271,7 +271,7 @@ export default function AddTransactionScreen() {
                       variant="primary"
                       size="large"
                       fullWidth
-                      rightIcon="mic"
+                      rightIcon="microphone"
                       onPress={handleStartRecording}
                     />
                   </>

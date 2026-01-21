@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+    maxHeight: 50,
   },
   filtersContent: {
     paddingHorizontal: 12,

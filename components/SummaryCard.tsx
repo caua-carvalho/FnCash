@@ -10,6 +10,7 @@ import { formatCurrency } from '@/utils/formatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { TRANSACTION_COLORS } from '@/constants/categories';
 
 /**
  * Props do componente SummaryCard
@@ -81,7 +82,7 @@ export function SummaryCard({
       {/* Saldo */}
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>Saldo</Text>
-        <Text style={[styles.balanceAmount, { color: balance >= 0 ? '#10B981' : '#EF4444' }]}>
+        <Text style={[styles.balanceAmount, { color: balance <= 0 ?  TRANSACTION_COLORS.expense : TRANSACTION_COLORS.income }]}>
           {formatCurrency(Math.abs(balance))}
         </Text>
       </View>

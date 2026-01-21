@@ -107,7 +107,7 @@ export class TransactionService {
       }
 
       const data = await response.json();
-      return Array.isArray(data.data) ? data.data : [];
+      return data as Transaction[];
     } catch (error) {
       console.error('Erro ao buscar transações:', error);
       throw error;

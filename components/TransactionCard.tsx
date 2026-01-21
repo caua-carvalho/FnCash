@@ -49,7 +49,7 @@ export function TransactionCard({
   const isExpense = transaction.type === 'expense';
   const color = isExpense ? TRANSACTION_COLORS.expense : TRANSACTION_COLORS.income;
   const sign = isExpense ? '- ' : '+ ';
-
+  const signColor = isExpense ? TRANSACTION_COLORS.expense : TRANSACTION_COLORS.income;
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={styles.content}>
@@ -78,10 +78,15 @@ export function TransactionCard({
         </View>
 
         {/* Valor */}
-        <Text style={[styles.amount, { color }]}>
-          {sign}
-          {formatCurrency(transaction.amount)}
+        <Text
+          style={[
+            styles.amount,
+            { color: signColor }
+          ]}
+        >
+          {sign}{formatCurrency(transaction.amount)}
         </Text>
+
       </View>
     </Pressable>
   );

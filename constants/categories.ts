@@ -4,6 +4,7 @@
  * Centraliza configurações visuais e metadados das categorias
  */
 
+import { Category } from "@/types/transaction";
 
 
 /**

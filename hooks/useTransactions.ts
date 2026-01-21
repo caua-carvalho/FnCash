@@ -5,7 +5,7 @@
  */
 
 import { transactionService } from '@/services';
-import type { Transaction } from '@/types/transaction';
+import type { CreateTransactionPayload, Transaction } from '@/types/transaction';
 import { useCallback, useEffect, useState } from 'react';
 
 /**

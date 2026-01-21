@@ -11,7 +11,7 @@
  */
 export const API_CONFIG = {
   // URL base do backend - SUBSTITUIR EM PRODUÇÃO
-  BASE_URL: 'http://192.168.1.100:3000/api',
+  BASE_URL: 'http://localhost/FnCash/FnCashBack',
 
   // Endpoints específicos
   ENDPOINTS: {
@@ -25,6 +25,9 @@ export const API_CONFIG = {
     // AI Categorização
     CATEGORIZE_AUDIO: '/ai/categorize',
   },
+
+  JWT_SECRET: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjIxNjAzYTU2LTJiZjItNGE2OS1hMTA5LWE4ZWYzYmFhYzk4NiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2ODk1NzQ4NCwiZXhwIjoxNzY5MDQzODg0fQ.6ymYvb93rvQVDJj1q4lI-XnxcLArnuUcHK0yBDtI83U',
+
 
   // Timeout padrão para requisições (em ms)
   TIMEOUT: 30000,

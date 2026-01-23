@@ -1,20 +1,15 @@
 /**
  * @file services/aiService.ts
- * @description Serviço para integração com IA (Gemini)
- * Responsável por categorização automática de transações via áudio
- *
- * NOTA: Este arquivo contém um exemplo de integração com Gemini
- * e um mock para desenvolvimento local. Substituir com sua implementação real.
+ * @description Serviço de integração com IA via backend
+ * Fluxo: áudio -> backend -> transcrição -> interpretação IA -> categorização
  */
 
 import { API_CONFIG } from '@/constants/api';
-
-
+import { appendAudio } from '@/utils/AppendAudio';
 import type { Category, TransactionType } from '@/types/transaction';
 
 /**
- * Interface para resposta de categorização
- * @interface AICategorizationResponse
+ * Resposta final da IA
  */
 export interface AICategorizationResponse {
   category: Category;
@@ -25,26 +20,31 @@ export interface AICategorizationResponse {
 }
 
 /**
- * Interface para requisição de categorização
- * @interface CategorizationRequest
+ * Payload enviado ao backend
+ * Backend é responsável por:
+ * 1. Decodificar áudio
+ * 2. Transcrever (Whisper, Gemini, etc.)
+ * 3. Interpretar texto
  */
 interface CategorizationRequest {
   userId: string;
-  audioBase64: string;
+  audioBase64: string | null;
   mimeType: string;
+  language: 'pt-BR';
 }
 
 /**
- * Classe para gerenciar integração com IA
+ * Serviço de IA (Singleton)
  */
-export class AIService {
+class AIService {
   private static instance: AIService;
-  private useLocalMock: boolean = true; // Mude para false ao integrar com backend real
 
   /**
-   * Obtém instância única do serviço (singleton)
-   * @returns {AIService} Instância do serviço
+   * Ative apenas em desenvolvimento
+   * Em produção deve ser sempre false
    */
+  private useMock = false;
+
   static getInstance(): AIService {
     if (!AIService.instance) {
       AIService.instance = new AIService();
@@ -53,209 +53,105 @@ export class AIService {
   }
 
   /**
-   * Categoriza uma transação a partir de um arquivo de áudio
-   * Tenta primeiro o backend, se falhar usa mock local
-   *
-   * @param {string} userId - ID do usuário
-   * @param {string} audioBase64 - Arquivo de áudio em base64
-   * @returns {Promise<AICategorizationResponse>} Resposta com categorização
-   * @throws {Error} Se houver erro no processo
+   * API pública usada pelo app
    */
   async categorizeAudio(
     userId: string,
-    audioBase64: string
+    audioUri: any
   ): Promise<AICategorizationResponse> {
-    try {
-      // Tenta usar backend real
-      if (!this.useLocalMock) {
-        return await this.categorizeViaBackend(userId, audioBase64);
-      }
-
-      // Usa mock local para desenvolvimento
-      console.log('[DEV MODE] Usando mock de categorização');
-      return this.generateMockCategorization(audioBase64);
-    } catch (error) {
-      console.error('Erro na categorização:', error);
-      // Fallback para mock
-      return this.generateMockCategorization(audioBase64);
+    if (this.useMock) {
+      return this.generateMockResponse();
     }
+
+    const response = await this.sendToBackend(userId, audioUri);
+    return response;
   }
 
   /**
-   * Envia áudio para o backend para categorização
-   * INTEGRE AQUI COM SEU BACKEND
-   *
-   * @param {string} userId - ID do usuário
-   * @param {string} audioBase64 - Áudio em base64
-   * @returns {Promise<AICategorizationResponse>}
-   * @private
+   * Comunicação com backend
    */
-  private async categorizeViaBackend(
+  private async sendToBackend(
     userId: string,
-    audioBase64: string
-  ): Promise<AICategorizationResponse> {
-    const payload: CategorizationRequest = {
-      userId,
-      audioBase64,
-      mimeType: 'audio/mp4',
-    };
+    audioUri: string
+  ): Promise<any> {
+    const formData = new FormData();
+
+    formData.append('userId', userId);
+    formData.append('language', 'pt-BR');
+
+    await appendAudio(formData, audioUri);
 
     const response = await fetch(
       `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CATEGORIZE_AUDIO}`,
       {
         method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${API_CONFIG.JWT_SECRET}`,
         },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(API_CONFIG.TIMEOUT),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Erro do servidor: ${response.status}`);
+      throw new Error(`Erro IA backend: ${response.status}`);
     }
 
-    const data = await response.json();
-    return this.validateResponse(data);
+    return response.json();
   }
 
-  /**
-   * Método alternativo: Usar Gemini API diretamente
-   * Descomente e configure se preferir chamar o Gemini direto
-   *
-   * @param {string} audioBase64 - Áudio em base64
-   * @returns {Promise<AICategorizationResponse>}
-   * @private
-   *
-   * EXEMPLO (COMENTADO):
-   * private async categorizeViaGemini(audioBase64: string): Promise<AICategorizationResponse> {
-   *   const prompt = `
-   *     Analise este áudio de transação financeira e extraia:
-   *     1. Valor em reais (número)
-   *     2. Categoria: 'Alimentação', 'Transporte', 'Compras', 'Contas' ou 'Saúde'
-   *     3. Tipo: 'expense' (gasto) ou 'income' (ganho)
-   *     4. Descrição breve
-   *     5. Confiança (0-1)
-   *
-   *     Responda em JSON apenas.
-   *   `;
-   *
-   *   // Implementar chamada à API Gemini aqui
-   * }
-   */
+
 
   /**
-   * Gera uma categorização fictícia para desenvolvimento
-   * Remove este método em produção
-   *
-   * @param {string} audioBase64 - Áudio em base64 (não usado no mock)
-   * @returns {AICategorizationResponse} Resposta mockeada
-   * @private
-   */
-  private generateMockCategorization(audioBase64: string): AICategorizationResponse {
-    // Simula diferentes respostas baseadas no comprimento do base64
-    // Em produção, isso virá da IA real
-    const responses: AICategorizationResponse[] = [
-      {
-        amount: 45.99,
-        category: 'Alimentação',
-        type: 'expense',
-        description: 'Almoço executivo',
-        confidence: 0.95,
-      },
-      {
-        amount: 150.0,
-        category: 'Compras',
-        type: 'expense',
-        description: 'Compras em loja',
-        confidence: 0.88,
-      },
-      {
-        amount: 22.5,
-        category: 'Transporte',
-        type: 'expense',
-        description: 'Corrida Uber',
-        confidence: 0.92,
-      },
-      {
-        amount: 89.9,
-        category: 'Saúde',
-        type: 'expense',
-        description: 'Farmácia',
-        confidence: 0.87,
-      },
-      {
-        amount: 2500.0,
-        category: 'Contas',
-        type: 'income',
-        description: 'Salário',
-        confidence: 0.99,
-      },
-    ];
-
-    // Retorna uma resposta aleatória
-    return responses[Math.floor(Math.random() * responses.length)];
-  }
-
-  /**
-   * Valida a resposta da IA
-   * Garante que todos os campos obrigatórios estejam presentes
-   *
-   * @param {any} data - Dados a validar
-   * @returns {AICategorizationResponse} Dados validados
-   * @throws {Error} Se dados inválidos
-   * @private
+   * Validação defensiva da resposta
    */
   private validateResponse(data: any): AICategorizationResponse {
-    const requiredFields = ['amount', 'category', 'type', 'description', 'confidence'];
+    const required = [
+      'amount',
+      'category',
+      'type',
+      'description',
+      'confidence',
+    ];
 
-    for (const field of requiredFields) {
+    for (const field of required) {
       if (!(field in data)) {
-        throw new Error(`Campo obrigatório faltando: ${field}`);
+        throw new Error(`Campo ausente: ${field}`);
       }
     }
 
-    // Valida valores específicos
     if (typeof data.amount !== 'number' || data.amount <= 0) {
-      throw new Error('Valor inválido');
-    }
-
-    if (!['Alimentação', 'Transporte', 'Compras', 'Contas', 'Saúde'].includes(data.category)) {
-      throw new Error('Categoria inválida');
+      throw new Error('Amount inválido');
     }
 
     if (!['expense', 'income'].includes(data.type)) {
-      throw new Error('Tipo de transação inválido');
+      throw new Error('Tipo inválido');
     }
 
     return {
       amount: data.amount,
       category: data.category as Category,
       type: data.type as TransactionType,
-      description: data.description || 'Transação',
-      confidence: Math.min(1, Math.max(0, data.confidence || 0.5)),
+      description: data.description,
+      confidence: Math.min(1, Math.max(0, data.confidence)),
     };
   }
 
   /**
-   * Alterna modo de mock
-   * Útil para desenvolvimento e testes
-   *
-   * @param {boolean} useMock - Se deve usar mock
+   * Mock isolado para DEV
    */
-  setUseMock(useMock: boolean): void {
-    this.useLocalMock = useMock;
+  private generateMockResponse(): AICategorizationResponse {
+    return {
+      amount: 42.9,
+      category: 'Alimentação',
+      type: 'expense',
+      description: 'Almoço',
+      confidence: 0.94,
+    };
   }
 
-  /**
-   * Obtém status do modo de mock
-   * @returns {boolean}
-   */
-  isUsingMock(): boolean {
-    return this.useLocalMock;
+  setUseMock(value: boolean): void {
+    this.useMock = value;
   }
 }
 
-// Exporta instância única do serviço
 export const aiService = AIService.getInstance();

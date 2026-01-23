@@ -38,7 +38,7 @@ export function useAudioRecorder() {
 
   // Timer para contar tempo de gravação
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     if (state.isRecording && !state.isPaused) {
       interval = setInterval(() => {
@@ -110,7 +110,7 @@ export function useAudioRecorder() {
   const stopRecording = useCallback(async (): Promise<string | null> => {
     try {
       setState((prev) => ({ ...prev, error: null }));
-      const uri = await audioService.stopRecording();
+      const uri = await audioService.stop();
       setState((prev) => ({
         ...prev,
         isRecording: false,

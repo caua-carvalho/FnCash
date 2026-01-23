@@ -14,26 +14,6 @@ import React, { useEffect } from 'react';
  * Configura a navegação por abas (tabs)
  */
 export default function RootLayout() {
-  /**
-   * Inicializa a sessão de áudio ao montar
-   * Necessário para gravar áudio
-   */
-  useEffect(() => {
-    const initAudio = async () => {
-      try {
-        await audioService.setupAudioSession();
-        console.log('✓ Sessão de áudio inicializada');
-      } catch (error) {
-        console.error('Erro ao inicializar áudio:', error);
-      }
-    };
-
-    initAudio();
-
-    return () => {
-      audioService.cleanup();
-    };
-  }, []);
 
   return (
     <Tabs

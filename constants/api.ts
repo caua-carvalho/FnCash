@@ -11,7 +11,7 @@
  */
 export const API_CONFIG = {
   // URL base do backend - SUBSTITUIR EM PRODUÇÃO
-  BASE_URL: 'http://192.168.15.32/FnCash/FnCashBack',
+  BASE_URL: 'https://fncashback.onrender.com',
 
   // Endpoints específicos
   ENDPOINTS: {
@@ -26,7 +26,7 @@ export const API_CONFIG = {
     CATEGORIZE_AUDIO: '/transactions/audio',
   },
 
-  JWT_SECRET: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjIxNjAzYTU2LTJiZjItNGE2OS1hMTA5LWE4ZWYzYmFhYzk4NiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2OTEwMzE3MywiZXhwIjoxNzY5MTg5NTczfQ.6XDtg3cxKlwvY2JTeHNYEnq4QUPKPylZUj87NxlizHk',
+  JWT_SECRET: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjIxNjAzYTU2LTJiZjItNGE2OS1hMTA5LWE4ZWYzYmFhYzk4NiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDIyNzUzOCwiZXhwIjoxNzcwMzEzOTM4fQ.WOLrOItdZA10Z6UFH4EbM4p3lAl7zfQgPqn574ehO28',
 
 
   // Timeout padrão para requisições (em ms)

@@ -60,7 +60,7 @@ export interface AICategorizationResponse {
  * Interface para requisição ao backend
  * Enviada após confirmação do usuário
  * @interface CreateTransactionPayload
- * @property {string} userId - ID do usuário
+ * @property {string} user_id - ID do usuário
  * @property {number} amount - Valor em reais
  * @property {Category} category - Categoria
  * @property {TransactionType} type - Tipo de transação
@@ -69,7 +69,7 @@ export interface AICategorizationResponse {
  * @property {string} [audioFile] - Arquivo de áudio (base64 ou blob)
  */
 export interface CreateTransactionPayload {
-  userId: string;
+  user_id: string;
   amount: number;
   category: Category;
   type: TransactionType;

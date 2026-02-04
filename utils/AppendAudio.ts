@@ -15,8 +15,8 @@ export async function appendAudio(
   // Android / iOS
   formData.append('audio', {
     uri: audioUri,
-    name: 'audio.ogg',
-    type: 'audio/ogg',
+    name: 'audio.m4a',
+    type: 'audio/m4a',
   } as any);
 
 }

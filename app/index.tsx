@@ -74,7 +74,6 @@ export default function DashboardScreen() {
               variant="primary"
               size="large"
               fullWidth
-              rightIcon="add"
               onPress={handleAddTransaction}
             />
           </View>

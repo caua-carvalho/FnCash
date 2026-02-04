@@ -45,7 +45,7 @@ export function SummaryCard({
   const income = calculateTotal(transactions, 'income');
   const expenses = calculateTotal(transactions, 'expense');
   const balance = income - expenses;
-
+  console.log('Resumo - Income:', income, 'Expenses:', expenses, 'Balance:', balance);
   return (
     <View style={styles.container}>
       {/* Header com título e período */}

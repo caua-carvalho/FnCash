@@ -32,20 +32,6 @@ interface SettingsItem {
  * Exibe informações e opções de configuração
  */
 export default function SettingsScreen() {
-  /**
-   * Alterna modo de mock para testes
-   */
-  const handleToggleMockMode = () => {
-    const isUsingMock = aiService.isUsingMock();
-    aiService.setUseMock(!isUsingMock);
-
-    Alert.alert(
-      'Modo de Teste',
-      isUsingMock
-        ? 'Modo de mock desativado. Usando backend real.'
-        : 'Modo de mock ativado. Usando dados fictícios para testes.'
-    );
-  };
 
   /**
    * Mostra informações sobre a API
@@ -71,12 +57,6 @@ export default function SettingsScreen() {
       title: 'Configuração de API',
       description: 'Saiba como integrar sua API',
       onPress: handleShowAPIInfo,
-    },
-    {
-      icon: 'remote',
-      title: 'Modo de Teste',
-      description: 'Alterna entre dados reais e fictícios',
-      onPress: handleToggleMockMode,
     },
     {
       icon: 'code-braces',

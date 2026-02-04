@@ -1,7 +1,7 @@
 /**
  * @file app/add.tsx
  * @description Tela de Adicionar Transação com Gravação de Áudio
- * Fluxo: Gravar áudio → Backend (STT + IA) → Confirmar → Salvar
+ * Fluxo: Gravar áudio → Backend (STT + IA) → Confirmar (editável) → Salvar
  */
 
 import { Button, CategorySelector } from '@/components';
@@ -10,8 +10,9 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { aiService } from '@/services/aiService';
 import type { AICategorizationResponse } from '@/services/aiService';
 import type { TransactionType } from '@/types/transaction';
-import { formatCurrency, formatTime } from '@/utils';
+import { formatTime } from '@/utils';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -21,6 +22,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -34,7 +36,6 @@ export default function AddTransactionScreen() {
   const {
     isRecording,
     recordingTime,
-    recordingUri,
     error: recordingError,
     startRecording,
     stopRecording,
@@ -59,6 +60,21 @@ export default function AddTransactionScreen() {
   const [description, setDescription] = useState<string>('');
   const [transactionType, setTransactionType] =
     useState<TransactionType>('expense');
+
+  /** DATA */
+  const [date, setDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const resetScreen = () => {
+    clearRecording();
+    setCategorization(null);
+    setSelectedCategory(undefined);
+    setAmount(0);
+    setDescription('');
+    setTransactionType('expense');
+    setDate(new Date());
+    setScreenState('recording');
+  };
 
   const handleStartRecording = async () => {
     try {
@@ -89,18 +105,13 @@ export default function AddTransactionScreen() {
     }
   };
 
-  const handleCancel = () => {
-    clearRecording();
-    setCategorization(null);
-    setSelectedCategory(undefined);
-    setAmount(0);
-    setDescription('');
-    setTransactionType('expense');
-    setScreenState('recording');
-  };
-
   const handleConfirm = async () => {
-    if (!selectedCategory || amount <= 0 || !description) {
+    if (
+      !selectedCategory ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      description.trim().length < 3
+    ) {
       Alert.alert('Erro', 'Preencha todos os campos corretamente');
       return;
     }
@@ -109,13 +120,12 @@ export default function AddTransactionScreen() {
       setScreenState('processing');
 
       const payload = {
-        userId: USER_ID,
+        user_id: USER_ID,
         amount,
         category: selectedCategory,
         type: transactionType,
-        description,
-        date: new Date().toISOString(),
-        audioUri: recordingUri,
+        description: description.trim(),
+        date: date.toISOString(),
       };
 
       const result = await createTransaction(payload);
@@ -126,9 +136,7 @@ export default function AddTransactionScreen() {
 
       setScreenState('success');
 
-      setTimeout(() => {
-        router.replace('/');
-      }, 1500);
+      setTimeout(resetScreen, 1200);
     } catch (error) {
       console.error(error);
       Alert.alert('Erro', 'Não foi possível salvar a transação');
@@ -182,29 +190,84 @@ export default function AddTransactionScreen() {
       {screenState === 'confirming' && (
         <>
           <View style={styles.header}>
-            <Pressable onPress={handleCancel}>
+            <Pressable onPress={resetScreen}>
               <Text style={styles.headerButton}>Cancelar</Text>
             </Pressable>
-            <Text style={styles.headerTitle}>Confirmar</Text>
+            <Pressable onPress={handleConfirm}>
+              <Text style={styles.headerTitle}>Confirmar</Text>
+            </Pressable>
             <View style={styles.headerSpacer} />
           </View>
 
           <ScrollView contentContainerStyle={styles.contentContainer}>
-            <View style={styles.amountContainer}>
-              <Text style={styles.currencySymbol}>R$</Text>
-              <Text style={styles.amountText}>
-                {formatCurrency(amount)}
-              </Text>
-            </View>
+            <TextInput
+              style={styles.amountInput}
+              keyboardType="numeric"
+              value={String(amount)}
+              onChangeText={(v) =>
+                setAmount(Number(v.replace(',', '.')))
+              }
+            />
 
             <CategorySelector
               selected={selectedCategory}
               onSelect={setSelectedCategory}
             />
 
-            <View style={styles.input}>
-              <Text style={styles.inputText}>{description}</Text>
+            {/* DATE PICKER */}
+            <Pressable
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <MaterialCommunityIcons name="calendar" size={20} />
+              <Text style={styles.dateText}>
+                {date.toLocaleDateString('pt-BR')}
+              </Text>
+            </Pressable>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={(_, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
+              />
+            )}
+
+            <View style={styles.typeSelector}>
+              <Pressable onPress={() => setTransactionType('expense')}>
+                <Text
+                  style={[
+                    styles.typeOption,
+                    transactionType === 'expense' && styles.typeActive,
+                  ]}
+                >
+                  Despesa
+                </Text>
+              </Pressable>
+
+              <Pressable onPress={() => setTransactionType('income')}>
+                <Text
+                  style={[
+                    styles.typeOption,
+                    transactionType === 'income' && styles.typeActive,
+                  ]}
+                >
+                  Receita
+                </Text>
+              </Pressable>
             </View>
+
+            <TextInput
+              style={styles.input}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Descrição"
+              multiline
+            />
 
             {categorization && (
               <Text style={styles.confidenceText}>
@@ -216,7 +279,7 @@ export default function AddTransactionScreen() {
               <Button
                 label="Cancelar"
                 variant="secondary"
-                onPress={handleCancel}
+                onPress={resetScreen}
                 fullWidth
               />
               <Button
@@ -253,6 +316,7 @@ export default function AddTransactionScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -262,14 +326,18 @@ const styles = StyleSheet.create({
   headerButton: { color: '#6B7280' },
   headerSpacer: { width: 40 },
   closeButton: { width: 40 },
+
   contentContainer: { padding: 24 },
+
   mainTitle: { fontSize: 28, fontWeight: '700', textAlign: 'center' },
   subtitle: { textAlign: 'center', color: '#9CA3AF', marginBottom: 24 },
+
   audioVisualizer: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 240,
   },
+
   recordButton: {
     width: 120,
     height: 120,
@@ -279,19 +347,56 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   recordButtonActive: { backgroundColor: '#374151' },
+
   recordingTime: {
     textAlign: 'center',
     fontSize: 32,
     fontWeight: '700',
   },
+
   errorText: { color: '#DC2626', textAlign: 'center' },
-  amountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+
+  amountInput: {
+    fontSize: 48,
+    fontWeight: '700',
+    textAlign: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#E5E7EB',
     marginBottom: 24,
   },
-  currencySymbol: { fontSize: 18, color: '#9CA3AF' },
-  amountText: { fontSize: 48, fontWeight: '700' },
+
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+
+  dateText: { fontSize: 14 },
+
+  typeSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+
+  typeOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#E5E7EB',
+  },
+
+  typeActive: {
+    backgroundColor: '#111827',
+    color: '#fff',
+  },
+
   input: {
     padding: 12,
     borderWidth: 1,
@@ -299,17 +404,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
   },
-  inputText: { fontSize: 14 },
+
   confidenceText: {
     fontSize: 12,
     color: '#16A34A',
     marginBottom: 16,
   },
+
   actionButtons: { gap: 12 },
+
   processingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   processingText: { marginTop: 12, fontWeight: '600' },
 });

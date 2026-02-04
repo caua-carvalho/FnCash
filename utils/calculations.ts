@@ -4,7 +4,7 @@
  * Centraliza lógica de cálculos de somas, médias e resumos
  */
 
-import { Transaction } from '@/types/transaction';
+import { Transaction, TransactionType } from '@/types/transaction';
 
 /**
  * Calcula o total de todas as transações
@@ -15,10 +15,21 @@ import { Transaction } from '@/types/transaction';
  * calculateTotal(transactions) // 1234.56
  * calculateTotal(transactions, 'expense') // 950.00
  */
-export function calculateTotal(transactions: Transaction[], type?: 'expense' | 'income'): number {
+export function calculateTotal(
+  transactions: Transaction[],
+  type: TransactionType
+): number {
   return transactions
-    .filter((t) => !type || t.type === type)
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => t.type === type)
+    .reduce((total, t) => {
+      const value = Number(t.amount);
+
+      if (!Number.isFinite(value)) {
+        return total; // ignora dado inválido
+      }
+
+      return total + value;
+    }, 0);
 }
 
 /**

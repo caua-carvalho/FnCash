@@ -218,17 +218,6 @@ async startRecording(): Promise<string> { ... }
 - **Estado**: React Hooks
 - **API**: Fetch (nativo)
 
-## 🔐 Modo de Teste
-
-Nas configurações, você pode:
-
-```
-Modo de Teste → Toggle On/Off
-```
-
-- **On**: Usa dados fictícios (desenvolvimento)
-- **Off**: Tenta conectar com backend real
-
 ## 📊 Arquivos de Configuração
 
 ### constants/api.ts
@@ -263,16 +252,6 @@ Este projeto é ótimo para aprender:
 3. **Entender**: Ler `ARCHITECTURE.md`
 4. **Integrar**: Seguir `INTEGRATION_GUIDE.md`
 5. **Expandir**: Adicionar features (gráficos, etc)
-
-## 📞 Suporte
-
-Toda a documentação está nos arquivos markdown:
-
-- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Como começar
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Como funciona
-- [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) - Como integrar
-
-Código comentado em JSDoc + comentários inline.
 
 ## 📄 Licença
 

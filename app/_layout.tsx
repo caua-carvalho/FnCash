@@ -1,102 +1,27 @@
-/**
- * @file app/_layout.tsx
- * @description Configuração de navegação raiz da aplicação
- * Define as telas e o padrão de navegação
- */
+import { Slot, Redirect, usePathname } from 'expo-router';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
 
-import { audioService } from '@/services';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import React, { useEffect } from 'react';
+function RootGate() {
+  const { isAuthenticated } = useAuth();
+  const pathname = usePathname();
 
-/**
- * Layout raiz da aplicação
- * Configura a navegação por abas (tabs)
- */
+  // NÃO redireciona se já estiver no login
+  if (!isAuthenticated && pathname !== '/login') {
+    return <Redirect href="/login" />;
+  }
+
+  // NÃO deixa usuário logado acessar login
+  if (isAuthenticated && pathname === '/login') {
+    return <Redirect href="/" />;
+  }
+
+  return <Slot />;
+}
+
 export default function RootLayout() {
-
   return (
-    <Tabs
-      screenOptions={{
-        // Cabeçalho padrão
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#fff',
-        },
-        headerTintColor: '#141414',
-        headerTitleStyle: {
-          fontWeight: '600',
-          fontSize: 18,
-        },
-
-        // Abas
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#E5E7EB',
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 70,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-          marginTop: 4,
-        },
-        tabBarActiveTintColor: '#141414',
-        tabBarInactiveTintColor: '#D1D5DB',
-      }}
-    >
-      {/* Dashboard */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          headerTitle: 'FnCash',
-          tabBarLabel: 'Início',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* Histórico */}
-      <Tabs.Screen
-        name="history"
-        options={{
-          title: 'Histórico',
-          headerTitle: 'Histórico',
-          tabBarLabel: 'Histórico',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="history" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* Adicionar Transação */}
-      <Tabs.Screen
-        name="add"
-        options={{
-          title: 'Adicionar',
-          headerShown: false,
-          tabBarLabel: 'Adicionar',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="plus-circle" size={size} color={color} />
-          ),
-        }}
-      />
-
-      {/* Configurações */}
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Configurações',
-          headerTitle: 'Configurações',
-          tabBarLabel: 'Ajustes',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <AuthProvider>
+      <RootGate />
+    </AuthProvider>
   );
 }

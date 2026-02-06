@@ -71,7 +71,7 @@ export class TransactionService {
       if (filters?.endDate) params.append('endDate', filters.endDate);
       if (filters?.category) params.append('category', filters.category);
 
-      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_TRANSACTIONS}?${params.toString()}`;
+      const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.GET_TRANSACTIONS}`;
 
       const response = await fetchWithTimeout(
         url,

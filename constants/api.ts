@@ -18,7 +18,7 @@ export const API_CONFIG = {
     // Transações
     CREATE_TRANSACTION: '/transactions',
     GET_TRANSACTIONS: '/transactions',
-    GET_TRANSACTION: (id: string) => `/transactions/${id}`,
+    GET_TRANSACTION: (id: string) => `/transactions`,
     UPDATE_TRANSACTION: (id: string) => `/transactions/${id}`,
     DELETE_TRANSACTION: (id: string) => `/transactions/${id}`,
 

@@ -4,7 +4,7 @@
  * Facilita importações em toda a aplicação
  */
 
-export { aiService, AIService } from './aiService';
-export { audioService, AudioService } from './audioService';
+export { aiService } from './aiService';
+export { audioService } from './audioService';
 export { transactionService, TransactionService } from './transactionService';
 

@@ -6,7 +6,6 @@
 import { Button, SummaryCard, TransactionCard } from '@/components';
 import { useTransactions } from '@/hooks/useTransactions';
 import { getCurrentMonthTransactions } from '@/utils';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -17,23 +16,13 @@ import {
   View,
 } from 'react-native';
 
-// ⚠️ MOCK — depois substituir por auth real
-const USER_ID = '21603a56-2bf2-4a69-a109-a8ef3baac986';
-
 export default function DashboardScreen() {
   const router = useRouter();
   const { transactions, loading, error, loadTransactions } =
-    useTransactions(USER_ID);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadTransactions();
-    }, [loadTransactions])
-  );
+    useTransactions();
 
   const monthTransactions = getCurrentMonthTransactions(transactions);
   const latestTransactions = transactions.slice(0, 5);
-  console.log('Transações:', latestTransactions);
 
   const handleAddTransaction = () => {
     router.push('/add');
@@ -51,11 +40,9 @@ export default function DashboardScreen() {
     <FlatList
       data={latestTransactions}
       keyExtractor={(item) => item.id}
-      scrollEnabled
       contentContainerStyle={styles.container}
       ListHeaderComponent={
         <>
-          {/* Resumo */}
           <View style={styles.section}>
             <SummaryCard
               transactions={monthTransactions}
@@ -67,7 +54,6 @@ export default function DashboardScreen() {
             />
           </View>
 
-          {/* Botão */}
           <View style={styles.section}>
             <Button
               label="Adicionar Transação"
@@ -78,9 +64,11 @@ export default function DashboardScreen() {
             />
           </View>
 
-          {/* Header */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Transações Recentes</Text>
+            <Text style={styles.sectionTitle}>
+              Transações Recentes
+            </Text>
+
             {latestTransactions.length > 0 && (
               <Button
                 label="Ver Todos"
@@ -91,7 +79,6 @@ export default function DashboardScreen() {
             )}
           </View>
 
-          {/* Estados */}
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#141414" />
@@ -100,20 +87,24 @@ export default function DashboardScreen() {
 
           {error && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>Erro ao carregar transações</Text>
+              <Text style={styles.errorText}>
+                Erro ao carregar transações
+              </Text>
               <Text style={styles.errorDetail}>{error}</Text>
               <Button
                 label="Tentar Novamente"
                 variant="secondary"
                 size="small"
-                onPress={loadTransactions}
+                onPress={() => loadTransactions()}
               />
             </View>
           )}
 
           {!loading && !error && latestTransactions.length === 0 && (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Nenhuma transação registrada</Text>
+              <Text style={styles.emptyText}>
+                Nenhuma transação registrada
+              </Text>
               <Text style={styles.emptySubtext}>
                 Adicione sua primeira transação
               </Text>
@@ -132,6 +123,7 @@ export default function DashboardScreen() {
     />
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

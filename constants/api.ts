@@ -11,7 +11,9 @@
  */
 export const API_CONFIG = {
   // URL base do backend - SUBSTITUIR EM PRODUÇÃO
-  BASE_URL: 'https://fncashback.onrender.com',
+  
+  // BASE_URL: 'https://fncashback.onrender.com',
+  BASE_URL: 'http://localhost/FnCash/FnCashBack/src/public',
 
   // Endpoints específicos
   ENDPOINTS: {
@@ -21,12 +23,13 @@ export const API_CONFIG = {
     GET_TRANSACTION: (id: string) => `/transactions`,
     UPDATE_TRANSACTION: (id: string) => `/transactions/${id}`,
     DELETE_TRANSACTION: (id: string) => `/transactions/${id}`,
+    LOGIN: '/login',
 
     // AI Categorização
     CATEGORIZE_AUDIO: '/transactions/audio',
   },
 
-  JWT_SECRET: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjIxNjAzYTU2LTJiZjItNGE2OS1hMTA5LWE4ZWYzYmFhYzk4NiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3MDM3OTAzNSwiZXhwIjoxNzcwNDY1NDM1fQ.cU4CIdp7jE6t-MC3zb-c4-n7jWHY7F1Nfxne7QqT4ac',
+  JWT_SECRET: '',
 
 
   // Timeout padrão para requisições (em ms)

@@ -6,5 +6,5 @@
 
 export { aiService } from './aiService';
 export { audioService } from './audioService';
-export { transactionService, TransactionService } from './transactionService';
+export { transactionService } from './transactionService';
 

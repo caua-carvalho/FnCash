@@ -1,9 +1,18 @@
-import { Slot, Redirect, usePathname } from 'expo-router';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { Redirect, Slot, usePathname } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 
 function RootGate() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
+
+  if(isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   // NÃO redireciona se já estiver no login
   if (!isAuthenticated && pathname !== '/login') {

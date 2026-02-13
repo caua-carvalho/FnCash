@@ -1,6 +1,6 @@
 // services/authService.ts
 import { API_CONFIG } from '@/constants/api';
-import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
+import { api } from '@/infra/http';
 
 type LoginResponse = {
   token: string;
@@ -11,23 +11,23 @@ type LoginResponse = {
   };
 };
 
+const { ENDPOINTS } = API_CONFIG;
 class AuthService {
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await fetchWithTimeout(
-      `${API_CONFIG.BASE_URL}/auth/login`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      },
-      API_CONFIG.TIMEOUT
-    );
+    try {
+      const { data } = await api.post<LoginResponse>(
+        ENDPOINTS.LOGIN,
+        { email, password }
+      );
 
-    if (!response.ok) {
-      throw new Error('Credenciais inválidas');
+      return data;
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new Error('Credenciais inválidas');
+      }
+
+      throw new Error('Erro ao realizar login');
     }
-
-    return response.json();
   }
 }
 

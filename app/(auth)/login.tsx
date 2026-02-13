@@ -1,19 +1,19 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
+  View,
 } from 'react-native';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('caua@fncash.dev');
+  const [password, setPassword] = useState('123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,33 +1,19 @@
 /**
  * @file hooks/useTransactions.ts
- * @description Hook customizado para gerenciar transações
- * Encapsula lógica de busca e criação de transações
+ * @description Hook para gerenciamento de transações
  */
 
 import { transactionService } from '@/services';
 import type { CreateTransactionPayload, Transaction } from '@/types/transaction';
 import { useCallback, useEffect, useState } from 'react';
 
-/**
- * Interface para o estado de transações
- * @interface TransactionsState
- */
 export interface TransactionsState {
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
 }
 
-/**
- * Hook para gerenciar transações
- * Fornece métodos para buscar, criar e gerenciar transações
- *
- * @param {string} userId - ID do usuário
- * @returns {Object} Estado e métodos de controle
- * @example
- * const { transactions, createTransaction, loadTransactions } = useTransactions(userId);
- */
-export function useTransactions(userId: string) {
+export function useTransactions() {
   const [state, setState] = useState<TransactionsState>({
     transactions: [],
     loading: false,
@@ -35,9 +21,7 @@ export function useTransactions(userId: string) {
   });
 
   /**
-   * Carrega todas as transações do usuário
-   * @param {Object} [filters] - Filtros opcionais
-   * @returns {Promise<void>}
+   * Carrega transações
    */
   const loadTransactions = useCallback(
     async (filters?: {
@@ -47,80 +31,97 @@ export function useTransactions(userId: string) {
     }) => {
       try {
         setState((prev) => ({ ...prev, loading: true, error: null }));
-        const transactions = await transactionService.getTransactions(userId, filters);
+
+        const transactions = await transactionService.getTransactions(filters);
+
         setState((prev) => ({
           ...prev,
           transactions,
           loading: false,
         }));
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erro ao carregar transações';
-        setState((prev) => ({
+        const message =
+          error instanceof Error ? error.message : 'Erro';
+
+        if (message === "SESSION_EXPIRED") {
+          setState(prev => ({
+            ...prev,
+            error: "Sessão expirada"
+          }));
+
+          return;
+        }
+
+        setState(prev => ({
           ...prev,
-          error: errorMessage,
-          loading: false,
+          error: message
         }));
       }
+
     },
-    [userId]
+    []
   );
 
   /**
-   * Cria uma nova transação
-   * @param {CreateTransactionPayload} payload - Dados da transação
-   * @returns {Promise<Transaction|null>} Transação criada ou null em caso de erro
+   * Cria transação
    */
-  const createTransaction = useCallback(async (payload: CreateTransactionPayload) => {
-    try {
-      setState((prev) => ({ ...prev, error: null }));
-      const newTransaction = await transactionService.createTransaction(payload);
+  const createTransaction = useCallback(
+    async (payload: CreateTransactionPayload) => {
+      try {
+        setState((prev) => ({ ...prev, error: null }));
 
-      // Atualiza a lista local
-      setState((prev) => ({
-        ...prev,
-        transactions: [newTransaction, ...prev.transactions],
-      }));
+        const newTransaction =
+          await transactionService.createTransaction(payload);
 
-      return newTransaction;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar transação';
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      return null;
-    }
-  }, []);
+        setState((prev) => ({
+          ...prev,
+          transactions: [newTransaction, ...prev.transactions],
+        }));
+
+        return newTransaction;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Erro ao criar transação';
+
+        setState((prev) => ({ ...prev, error: message }));
+        return null;
+      }
+    },
+    []
+  );
 
   /**
-   * Deleta uma transação
-   * @param {string} transactionId - ID da transação
-   * @returns {Promise<boolean>} Sucesso da operação
+   * Deleta transação
    */
-  const deleteTransaction = useCallback(async (transactionId: string) => {
-    try {
-      setState((prev) => ({ ...prev, error: null }));
-      await transactionService.deleteTransaction(transactionId);
+  const deleteTransaction = useCallback(
+    async (transactionId: string) => {
+      try {
+        setState((prev) => ({ ...prev, error: null }));
 
-      // Remove da lista local
-      setState((prev) => ({
-        ...prev,
-        transactions: prev.transactions.filter((t) => t.id !== transactionId),
-      }));
+        await transactionService.deleteTransaction(transactionId);
 
-      return true;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao deletar transação';
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      return false;
-    }
-  }, []);
+        setState((prev) => ({
+          ...prev,
+          transactions: prev.transactions.filter(
+            (t) => t.id !== transactionId
+          ),
+        }));
 
-  /**
-   * Carrega transações na montagem do componente
-   */
+        return true;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Erro ao deletar transação';
+
+        setState((prev) => ({ ...prev, error: message }));
+        return false;
+      }
+    },
+    []
+  );
+
   useEffect(() => {
-    if (userId) {
-      loadTransactions();
-    }
-  }, [userId, loadTransactions]);
+    loadTransactions();
+  }, [loadTransactions]);
 
   return {
     ...state,

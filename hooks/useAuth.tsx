@@ -1,12 +1,19 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { tokenStorage } from '@/utils/authToken';
 import { authService } from '@/services/authService';
 import { User } from '@/types/user';
+import { tokenStorage } from '@/utils/authToken';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 type AuthContextData = {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   signIn(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
 };
@@ -16,26 +23,36 @@ const AuthContext = createContext<AuthContextData | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    tokenStorage.get().then((storedToken) => {
-      if (storedToken) {
-        setToken(storedToken);
-        // depois: fetch /me
-      }
-    });
+    initialize();
   }, []);
 
-  async function signIn(email: string, password: string) {
-    const { token, user } = await authService.login(email, password);
+  async function initialize() {
+    try {
+      const storedToken = await tokenStorage.get();
 
-    await tokenStorage.set(token);
-    setToken(token);
-    setUser(user);
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function signIn(email: string, password: string) {
+    const response = await authService.login(email, password);
+
+    await tokenStorage.set(response.token);
+
+    setToken(response.token);
+    setUser(response.user);
   }
 
   async function signOut() {
     await tokenStorage.remove();
+
     setToken(null);
     setUser(null);
   }
@@ -46,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         token,
         isAuthenticated: !!token,
+        isLoading,
         signIn,
         signOut,
       }}
@@ -57,8 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
+
   if (!ctx) {
     throw new Error('useAuth deve ser usado dentro de AuthProvider');
   }
+
   return ctx;
 }
